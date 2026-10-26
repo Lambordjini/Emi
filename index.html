@@ -44,7 +44,24 @@
 
     <div class="setup-grid">
       <div class="card setup-card">
-        <h2 class="setup-h">1 · Capitolele</h2>
+        <h2 class="setup-h">1 · Cum vrei să exersezi</h2>
+        <p class="setup-sub">Alege modul de lucru.</p>
+        <div class="modes" id="modes">
+          <button class="mode" type="button" data-mode="quiz" aria-pressed="true">
+            <span class="mode-ico">✅</span>
+            <b>Test grilă</b>
+            <small>Bifezi variantele, iar aplicația îți verifică răspunsul.</small>
+          </button>
+          <button class="mode" type="button" data-mode="flash" aria-pressed="false">
+            <span class="mode-ico">🗂️</span>
+            <b>Flashcard-uri</b>
+            <small>Întorci cartonașul și spui singur dacă ai știut.</small>
+          </button>
+        </div>
+      </div>
+
+      <div class="card setup-card">
+        <h2 class="setup-h">2 · Capitolele</h2>
         <p class="setup-sub">Alege din ce capitole vrei să exersezi.</p>
         <div class="chips" id="sections"></div>
         <div class="chip-tools">
@@ -54,7 +71,7 @@
       </div>
 
       <div class="card setup-card">
-        <h2 class="setup-h">2 · Câte întrebări</h2>
+        <h2 class="setup-h">3 · Câte întrebări</h2>
         <p class="setup-sub">Din <b id="pool-count">268</b> întrebări disponibile.</p>
         <div class="chips" id="counts"></div>
         <label class="custom-row">
@@ -64,7 +81,7 @@
       </div>
 
       <div class="card setup-card">
-        <h2 class="setup-h">3 · Opțiuni</h2>
+        <h2 class="setup-h">4 · Opțiuni</h2>
         <label class="switch">
           <input type="checkbox" id="opt-shuffle-opts">
           <span class="track"><span class="thumb"></span></span>
@@ -73,7 +90,7 @@
         <label class="switch">
           <input type="checkbox" id="opt-hide-opts">
           <span class="track"><span class="thumb"></span></span>
-          <span class="switch-txt"><b>Ascunde variantele</b><small>Mod greu: doar întrebarea pe față.</small></span>
+          <span class="switch-txt"><b>Ascunde variantele</b><small>Mod greu: doar întrebarea pe față. Doar la flashcard-uri.</small></span>
         </label>
       </div>
     </div>
@@ -97,8 +114,8 @@
         <div class="progress-txt">
           <span id="progress-count">1 / 20</span>
           <span class="tally">
-            <b class="ok" id="tally-known">0</b> știute ·
-            <b class="bad" id="tally-unknown">0</b> de repetat
+            <b class="ok" id="tally-known">0</b> <span id="tally-known-lbl">corecte</span> ·
+            <b class="bad" id="tally-unknown">0</b> <span id="tally-unknown-lbl">greșite</span>
           </span>
         </div>
       </div>
@@ -116,11 +133,12 @@
           <div class="face-body">
             <h2 class="q-text" id="q-text"></h2>
             <figure class="q-fig" id="q-fig" hidden><img id="q-img" alt="Imagine din întrebare"></figure>
+            <p class="pick-hint" id="pick-hint" hidden></p>
             <ul class="opts" id="q-opts"></ul>
           </div>
           <div class="face-foot">
-            <button class="btn btn-primary" id="reveal-btn" type="button">Arată răspunsul</button>
-            <span class="hint">sau apasă <kbd>Space</kbd></span>
+            <button class="btn btn-primary" id="reveal-btn" type="button">Verifică răspunsul</button>
+            <span class="hint" id="reveal-hint">sau apasă <kbd>Space</kbd></span>
           </div>
         </article>
 
@@ -132,12 +150,13 @@
             <span class="q-num" id="a-num">#1</span>
           </div>
           <div class="face-body">
+            <p class="verdict" id="verdict" hidden></p>
             <h3 class="a-q" id="a-q"></h3>
             <figure class="q-fig" id="a-fig" hidden><img id="a-img" alt="Imagine din întrebare"></figure>
             <ul class="opts opts-ans" id="a-opts"></ul>
             <p class="note" id="a-note" hidden></p>
           </div>
-          <div class="face-foot grade">
+          <div class="face-foot grade" id="grade-foot">
             <button class="btn btn-bad" id="bad-btn" type="button">
               <span class="btn-ico">✕</span> Nu am știut
             </button>
@@ -145,13 +164,15 @@
               <span class="btn-ico">✓</span> Am știut
             </button>
           </div>
+          <div class="face-foot" id="next-foot" hidden>
+            <button class="btn btn-primary" id="next-btn" type="button">Următoarea întrebare</button>
+            <span class="hint">sau apasă <kbd>Enter</kbd></span>
+          </div>
         </article>
       </div>
     </div>
 
-    <p class="kbd-help">
-      <kbd>Space</kbd> întoarce · <kbd>1</kbd> nu am știut · <kbd>2</kbd> am știut · <kbd>Esc</kbd> termină
-    </p>
+    <p class="kbd-help" id="kbd-help"></p>
   </div>
 </section>
 

@@ -36,31 +36,40 @@ Cloudflare Pages work the same way — point them at the repository root with no
 
 ## How to use it
 
-1. **Pick the chapters** you want to practise.
-2. **Pick how many questions** — 10, 20, 30, 50, 100, *all of them*, or type an exact number.
-3. Optionally turn on **Amestecă variantele** (shuffles the answer options, so you cannot
-   memorise letter positions) or **Ascunde variantele** (hard mode: the front shows only the
-   question).
-4. For each card: read the question, hit **Arată răspunsul**, then mark **Am știut** or
-   **Nu am știut**.
-5. At the end you get your **percentage**, how many you knew and how many you missed. From
-   there you can **repeat just the ones you missed**, **review them** with the correct answers,
-   or start a fresh session.
+1. **Pick a mode:**
+   * **Test grilă** (default) — tap the options you think are right, hit **Verifică răspunsul**,
+     and the app marks it for you. The answer side shows the correct options in green, anything
+     you picked wrongly in red, and any correct option you missed tagged *ratat*. A question
+     counts as correct only when your selection matches the marked answers exactly.
+   * **Flashcard-uri** — the original mode: reveal the answer and judge yourself with
+     **Am știut** / **Nu am știut**.
+2. **Pick the chapters** you want to practise.
+3. **Pick how many questions** — 10, 20, 30, 50, 100, *all of them*, or type an exact number.
+4. Optionally turn on **Amestecă variantele** (shuffles the answer options, so you cannot
+   memorise letter positions) or **Ascunde variantele** (hard mode, flashcards only: the front
+   shows only the question).
+5. At the end you get your **percentage**, how many you got right and how many you missed. From
+   there you can **repeat just the ones you missed**, **review them** with the correct answers
+   (and, in test mode, what you had picked), or start a fresh session.
+
+Questions marked `CS` have exactly one correct answer, so picking one option replaces the
+previous pick. Questions marked `CM` have several, so you tick as many as apply.
 
 Questions are reshuffled every session, so repeating the same selection gives a new order.
 
-**Keyboard:** <kbd>Space</kbd> reveal · <kbd>1</kbd> didn't know · <kbd>2</kbd> knew ·
-<kbd>Esc</kbd> end the session.
+**Keyboard:** in test mode <kbd>1</kbd>–<kbd>5</kbd> pick options and <kbd>Enter</kbd> checks,
+then moves on; in flashcard mode <kbd>Space</kbd> reveals, <kbd>1</kbd> didn't know,
+<kbd>2</kbd> knew. <kbd>Esc</kbd> ends the session in either.
 
-Chapter selection, session size, the two options and the light/dark theme are remembered in the
-browser. Nothing is uploaded anywhere.
+The mode, chapter selection, session size, the two options and the light/dark theme are
+remembered in the browser. Nothing is uploaded anywhere.
 
 ## Files
 
 ```
 index.html               the page
 assets/style.css         styles (light + dark)
-assets/app.js            session logic, flashcards, scoring
+assets/app.js            session logic, both modes, scoring
 assets/data.js           generated — the 268 questions and their answers
 assets/img/q264–268.jpg  generated — pictures cropped out of the PDF
 tools/extract_answers.py generated the two above from the PDF

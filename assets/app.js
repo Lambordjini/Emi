@@ -23,6 +23,7 @@
 
   /* ── settings ────────────────────────────────────────────────────── */
   var settings = {
+    mode: "quiz",       // "quiz" = tap the answers and get marked, "flash" = self-assessed
     sections: SECTIONS.slice(),
     count: 20,          // number, or "all"
     shuffleOpts: false,
@@ -35,6 +36,7 @@
       var keep = s.sections.filter(function (x) { return SECTIONS.indexOf(x) !== -1; });
       if (keep.length) settings.sections = keep;
     }
+    if (s.mode === "quiz" || s.mode === "flash") settings.mode = s.mode;
     if (s.count === "all" || (typeof s.count === "number" && s.count > 0)) settings.count = s.count;
     settings.shuffleOpts = !!s.shuffleOpts;
     settings.hideOpts = !!s.hideOpts;
@@ -63,7 +65,7 @@
     var order = settings.shuffleOpts
       ? shuffle(q.o.map(function (_, i) { return i; }))
       : q.o.map(function (_, i) { return i; });
-    return { q: q, order: order };
+    return { q: q, order: order, picked: [], correct: null };
   }
 
   function screen(name) {
@@ -128,6 +130,19 @@
     $("start-btn").disabled = !n;
   }
 
+  /* Reflect the chosen mode in the setup UI. */
+  function syncMode() {
+    document.querySelectorAll("#modes .mode").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.dataset.mode === settings.mode);
+    });
+    // "hide the options" would leave nothing to tap in quiz mode.
+    var flash = settings.mode === "flash";
+    var box = $("opt-hide-opts");
+    box.disabled = !flash;
+    box.closest(".switch").classList.toggle("is-off", !flash);
+    $("start-btn").textContent = flash ? "Începe sesiunea" : "Începe testul";
+  }
+
   function sessionSize() {
     var max = pool().length;
     if (settings.count === "all") return max;
@@ -147,16 +162,66 @@
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   }
 
-  function optionList(card, withAnswers) {
+  /* Front of the card. In quiz mode every option is a button you can tap. */
+  function optionList(card) {
+    var quiz = settings.mode === "quiz";
+    var html = "";
+    card.order.forEach(function (orig, pos) {
+      var body = "<span class=\"key\">" + LETTERS[pos] + "</span><span>" + card.q.o[orig] + "</span>";
+      html += quiz
+        ? "<li><button type=\"button\" class=\"opt\" data-pos=\"" + pos + "\" aria-pressed=\"false\">" + body + "</button></li>"
+        : "<li>" + body + "</li>";
+    });
+    return html;
+  }
+
+  /* Back of the card: correct answers, plus what was picked when in quiz mode. */
+  function answerList(card) {
+    var quiz = settings.mode === "quiz";
     var html = "";
     card.order.forEach(function (orig, pos) {
       var right = card.q.a.indexOf(orig) !== -1;
-      var cls = withAnswers ? (right ? " class=\"right\"" : " class=\"wrong\"") : "";
-      html += "<li" + cls + "><span class=\"key\">" +
-              (withAnswers && right ? "✓" : LETTERS[pos]) +
-              "</span><span>" + card.q.o[orig] + "</span></li>";
+      var picked = quiz && card.picked.indexOf(pos) !== -1;
+      var cls = right ? "right" : "wrong";
+      var tag = "";
+      if (quiz) {
+        if (right && picked) { tag = "<span class=\"tag tag-you-ok\">răspunsul tău</span>"; }
+        else if (right) { cls = "right missed"; tag = "<span class=\"tag tag-miss\">ratat</span>"; }
+        else if (picked) { cls = "picked-wrong"; tag = "<span class=\"tag tag-you\">răspunsul tău</span>"; }
+      }
+      var key = right ? "✓" : (picked ? "✕" : LETTERS[pos]);
+      html += "<li class=\"" + cls + "\"><span class=\"key\">" + key + "</span>" +
+              "<span>" + card.q.o[orig] + "</span>" + tag + "</li>";
     });
     return html;
+  }
+
+  /* A question counts as right only when the picks match the marked answers exactly. */
+  function isCorrect(card) {
+    var want = card.q.a.slice().sort().join(",");
+    var got = card.picked.map(function (pos) { return card.order[pos]; }).sort().join(",");
+    return want === got;
+  }
+
+  function updatePickUI() {
+    var card = session.cards[session.i];
+    var quiz = settings.mode === "quiz";
+    Array.prototype.forEach.call($("q-opts").querySelectorAll(".opt"), function (btn) {
+      btn.setAttribute("aria-pressed", card.picked.indexOf(+btn.dataset.pos) !== -1);
+    });
+    if (quiz) $("reveal-btn").disabled = card.picked.length === 0;
+  }
+
+  function togglePick(pos) {
+    var card = session.cards[session.i];
+    if ($("flip").classList.contains("flipped")) return;   // already checked
+    if (card.q.t === "CS") {
+      card.picked = card.picked.length === 1 && card.picked[0] === pos ? [] : [pos];
+    } else {
+      var at = card.picked.indexOf(pos);
+      if (at === -1) card.picked.push(pos); else card.picked.splice(at, 1);
+    }
+    updatePickUI();
   }
 
   function renderCard() {
@@ -187,13 +252,38 @@
       } else { fig.hidden = true; img.removeAttribute("src"); }
     });
 
-    $("q-opts").innerHTML = settings.hideOpts ? "" : optionList(card, false);
+    var quiz = settings.mode === "quiz";
+    $("q-opts").innerHTML = (!quiz && settings.hideOpts) ? "" : optionList(card);
+    $("q-opts").classList.toggle("pickable", quiz);
+
+    var hint = $("pick-hint");
+    hint.hidden = !quiz;
+    hint.textContent = q.t === "CM"
+      ? "Complement multiplu — bifează toate variantele corecte."
+      : "Complement simplu — alege o singură variantă.";
+
+    $("reveal-btn").textContent = quiz ? "Verifică răspunsul" : "Arată răspunsul";
+    $("reveal-btn").disabled = quiz;                 // nothing picked yet
+    $("reveal-hint").innerHTML = quiz
+      ? "tastele <kbd>1</kbd>–<kbd>5</kbd> aleg, <kbd>Enter</kbd> verifică"
+      : "sau apasă <kbd>Space</kbd>";
+
+    $("tally-known-lbl").textContent = quiz ? "corecte" : "știute";
+    $("tally-unknown-lbl").textContent = quiz ? "greșite" : "de repetat";
+
+    $("kbd-help").innerHTML = quiz
+      ? "<kbd>1</kbd>–<kbd>5</kbd> aleg variantele · <kbd>Enter</kbd> verifică / continuă · <kbd>Esc</kbd> termină"
+      : "<kbd>Space</kbd> întoarce · <kbd>1</kbd> nu am știut · <kbd>2</kbd> am știut · <kbd>Esc</kbd> termină";
+
+    $("grade-foot").hidden = quiz;
+    $("next-foot").hidden = !quiz;
+    $("verdict").hidden = true;
 
     // back
     $("a-section").textContent = q.s;
     $("a-num").textContent = "#" + q.n;
     $("a-q").innerHTML = q.q;
-    $("a-opts").innerHTML = optionList(card, true);
+    $("a-opts").innerHTML = answerList(card);
     var note = $("a-note");
     if (q.note) { note.textContent = q.note; note.hidden = false; }
     else { note.hidden = true; note.textContent = ""; }
@@ -218,17 +308,46 @@
   function flip() {
     var f = $("flip");
     if (f.classList.contains("flipped")) return;
+    var card = session.cards[session.i];
+    var quiz = settings.mode === "quiz";
+
+    if (quiz) {
+      if (!card.picked.length) return;               // nothing to check yet
+      card.correct = isCorrect(card);
+      $("a-opts").innerHTML = answerList(card);      // redraw with the picks shown
+
+      var v = $("verdict");
+      v.className = "verdict " + (card.correct ? "ok" : "bad");
+      v.innerHTML = card.correct
+        ? "✓ Corect!"
+        : "✕ Greșit <small>· răspunsul corect e marcat cu verde</small>";
+      v.hidden = false;
+
+      (card.correct ? session.known : session.unknown).push(card);
+      $("tally-known").textContent = session.known.length;
+      $("tally-unknown").textContent = session.unknown.length;
+      fitCard();
+    }
+
     f.classList.add("flipped");
-    // Move focus onto the grading buttons once the card has turned.
-    window.setTimeout(function () { $("ok-btn").focus({ preventScroll: true }); }, 380);
+    window.setTimeout(function () {
+      $(quiz ? "next-btn" : "ok-btn").focus({ preventScroll: true });
+    }, 380);
   }
 
-  function grade(knew) {
-    if (!$("flip").classList.contains("flipped")) return;   // must reveal first
-    (knew ? session.known : session.unknown).push(session.cards[session.i]);
+  /* Quiz mode has already scored the card, so this only moves on. */
+  function advance() {
+    if (!$("flip").classList.contains("flipped")) return;
     session.i++;
     if (session.i >= session.cards.length) showResults();
     else renderCard();
+  }
+
+  function grade(knew) {
+    if (settings.mode === "quiz") return;                   // scored automatically
+    if (!$("flip").classList.contains("flipped")) return;   // must reveal first
+    (knew ? session.known : session.unknown).push(session.cards[session.i]);
+    advance();
   }
 
   /* ── results ─────────────────────────────────────────────────────── */
@@ -237,6 +356,9 @@
     var known = session.known.length;
     var pct = total ? Math.round(known / total * 100) : 0;
 
+    var quiz = settings.mode === "quiz";
+    document.querySelector(".score.ok span").textContent = quiz ? "Corecte" : "Știute";
+    document.querySelector(".score.bad span").textContent = "Greșite";
     $("res-pct").textContent = pct + "%";
     $("res-known").textContent = known;
     $("res-unknown").textContent = session.unknown.length;
@@ -289,7 +411,9 @@
           "</div>" +
           "<h2 class=\"q-text\">" + q.q + "</h2>" +
           (q.img ? "<figure class=\"q-fig\"><img src=\"" + esc(q.img) + "\" alt=\"Imagine din întrebarea " + q.n + "\"></figure>" : "") +
-          "<ul class=\"opts opts-ans\">" + optionList(card, true) + "</ul>" +
+          (card.correct === false
+            ? "<p class=\"verdict bad\">✕ Răspunsul tău a fost greșit</p>" : "") +
+          "<ul class=\"opts opts-ans\">" + answerList(card) + "</ul>" +
           (q.note ? "<p class=\"note\">" + esc(q.note) + "</p>" : "");
         list.appendChild(el);
       });
@@ -336,8 +460,24 @@
       settings.hideOpts = this.checked; save(STORE_KEY, settings);
     });
 
+    document.querySelectorAll("#modes .mode").forEach(function (b) {
+      b.addEventListener("click", function () {
+        settings.mode = b.dataset.mode;
+        syncMode();
+        save(STORE_KEY, settings);
+      });
+    });
+    syncMode();
+
+    // Options are redrawn for every card, so listen on the list instead of each button.
+    $("q-opts").addEventListener("click", function (e) {
+      var btn = e.target.closest(".opt");
+      if (btn) togglePick(+btn.dataset.pos);
+    });
+
     $("start-btn").addEventListener("click", function () { startSession(); });
     $("reveal-btn").addEventListener("click", flip);
+    $("next-btn").addEventListener("click", advance);
     $("ok-btn").addEventListener("click", function () { grade(true); });
     $("bad-btn").addEventListener("click", function () { grade(false); });
 
@@ -360,11 +500,22 @@
       if (!$("screen-study").classList.contains("is-active")) return;
       if (e.target.matches("input, textarea")) return;
       var flipped = $("flip").classList.contains("flipped");
+      var quiz = settings.mode === "quiz";
+
+      if (e.key === "Escape") { $("quit-btn").click(); return; }
+
       if (e.code === "Space" || e.key === "Enter") {
-        if (!flipped) { e.preventDefault(); flip(); }
+        e.preventDefault();
+        if (flipped) { if (quiz) advance(); }
+        else flip();
+        return;
+      }
+
+      if (quiz) {
+        var n = parseInt(e.key, 10);
+        if (!flipped && n >= 1 && n <= 5) { e.preventDefault(); togglePick(n - 1); }
       } else if (e.key === "1") { grade(false); }
       else if (e.key === "2") { grade(true); }
-      else if (e.key === "Escape") { $("quit-btn").click(); }
     });
 
     window.addEventListener("resize", function () {
