@@ -98,5 +98,9 @@ green strokes cover more than 30% of its width.
 * **Question 139** has option a) circled in red with "9,3" written next to it by hand, while
   b) carries the green highlight. The green answer is used and the card shows a note about the
   handwritten correction.
+* **Questions 11, 29 and 157 print the same option twice** — a typo in the test paper, not an
+  extraction error. Where the duplicated text is a correct answer (11 and 29), picking either
+  copy is graded correct, since they are word for word the same; each of these cards carries a
+  note saying so. Grading compares the answer *text*, not the option letter.
 * Two typographic glitches in the PDF text are corrected: `grade Tёrner` → `grade Thörner`
   (#46) and `st[ri` → `stări` (#143). Both are listed in `FIXES` in the extraction script.

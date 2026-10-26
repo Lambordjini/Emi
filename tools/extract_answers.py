@@ -34,6 +34,25 @@ FIXES = {
 }
 
 
+def duplicate_note(d):
+    """A few questions are printed with two identical options (a typo in the test paper).
+    Flag them, so it is clear why two rows look the same and why both are accepted."""
+    seen = {}
+    for i, text in enumerate(d["o"]):
+        seen.setdefault(text, []).append(i)
+    groups = [ix for ix in seen.values() if len(ix) > 1]
+    if not groups:
+        return None
+    parts = []
+    for ix in groups:
+        letters = " şi ".join(f"{'abcde'[i]})" for i in ix)
+        if any(i in d["a"] for i in ix):
+            parts.append(f"variantele {letters} au text identic şi ambele sunt acceptate ca răspuns corect")
+        else:
+            parts.append(f"variantele {letters} au text identic")
+    return "Atenție: în PDF, " + "; ".join(parts) + "."
+
+
 def apply_fixes(d):
     f = FIXES.get(d["n"])
     if not f:
@@ -43,6 +62,13 @@ def apply_fixes(d):
         d["o"] = [o.replace(old, new) for o in d["o"]]
     if "note" in f:
         d["note"] = f["note"]
+    return d
+
+
+def add_notes(d):
+    dup = duplicate_note(d)
+    if dup:
+        d["note"] = (d["note"] + " " + dup) if d.get("note") else dup
     return d
 
 
@@ -184,7 +210,7 @@ def main(pdf_path, out_dir):
              "q": tidy(q["q"]), "o": [tidy(o["t"]) for o in q["options"]], "a": answers}
         if q.get("img"):
             d["img"] = q["img"]
-        data.append(apply_fixes(d))
+        data.append(add_notes(apply_fixes(d)))
         if d["s"] not in sections:
             sections.append(d["s"])
 

@@ -180,7 +180,7 @@
     var quiz = settings.mode === "quiz";
     var html = "";
     card.order.forEach(function (orig, pos) {
-      var right = card.q.a.indexOf(orig) !== -1;
+      var right = isRightText(card.q, orig);
       var picked = quiz && card.picked.indexOf(pos) !== -1;
       var cls = right ? "right" : "wrong";
       var tag = "";
@@ -196,10 +196,21 @@
     return html;
   }
 
-  /* A question counts as right only when the picks match the marked answers exactly. */
+  /* Three questions in the paper print the same option twice (#11, #29, #157), so an index
+     comparison would mark a word-for-word identical pick wrong. Compare the answer texts. */
+  function rightTexts(q) {
+    return q.a.map(function (ix) { return q.o[ix]; });
+  }
+
+  function isRightText(q, orig) {
+    return rightTexts(q).indexOf(q.o[orig]) !== -1;
+  }
+
+  /* A question counts as right only when the picked texts match the marked ones exactly. */
   function isCorrect(card) {
-    var want = card.q.a.slice().sort().join(",");
-    var got = card.picked.map(function (pos) { return card.order[pos]; }).sort().join(",");
+    var want = rightTexts(card.q).slice().sort().join("\u0000");
+    var got = card.picked.map(function (pos) { return card.q.o[card.order[pos]]; })
+                         .sort().join("\u0000");
     return want === got;
   }
 
