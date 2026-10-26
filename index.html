@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Igiena generală — Totalizarea 1</title>
+<meta name="description" content="Flashcard-uri pentru totalizarea 1 la Igiena generală: 268 de întrebări cu răspunsurile corecte.">
+<meta name="theme-color" content="#4255ff">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Sari la conținut</a>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <button class="brand" id="brand" type="button" title="Înapoi la început">
+      <span class="brand-mark">🧠</span>
+      <span class="brand-txt">Igiena <b>generală</b></span>
+    </button>
+    <div class="topbar-right">
+      <span class="pill" id="pill-total">268 întrebări</span>
+      <button class="icon-btn" id="theme-btn" type="button" aria-label="Schimbă tema">
+        <span class="theme-ico"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ───────────── SETUP ───────────── -->
+<section class="screen is-active" id="screen-setup">
+  <div class="wrap">
+    <div class="hero">
+      <p class="eyebrow">Totalizarea 1</p>
+      <h1>Învață cu flashcard-uri</h1>
+      <p class="lede">Întrebările și răspunsurile corecte sunt preluate din <em>totalizarea 1.pdf</em>.
+        Alege câte întrebări vrei, întoarce cartonașul și marchează dacă ai știut.</p>
+    </div>
+
+    <div class="setup-grid">
+      <div class="card setup-card">
+        <h2 class="setup-h">1 · Capitolele</h2>
+        <p class="setup-sub">Alege din ce capitole vrei să exersezi.</p>
+        <div class="chips" id="sections"></div>
+        <div class="chip-tools">
+          <button class="link-btn" type="button" data-sections="all">Toate</button>
+          <button class="link-btn" type="button" data-sections="none">Niciunul</button>
+        </div>
+      </div>
+
+      <div class="card setup-card">
+        <h2 class="setup-h">2 · Câte întrebări</h2>
+        <p class="setup-sub">Din <b id="pool-count">268</b> întrebări disponibile.</p>
+        <div class="chips" id="counts"></div>
+        <label class="custom-row">
+          <span>Sau un număr exact</span>
+          <input type="number" id="custom-count" min="1" step="1" inputmode="numeric" placeholder="ex. 35">
+        </label>
+      </div>
+
+      <div class="card setup-card">
+        <h2 class="setup-h">3 · Opțiuni</h2>
+        <label class="switch">
+          <input type="checkbox" id="opt-shuffle-opts">
+          <span class="track"><span class="thumb"></span></span>
+          <span class="switch-txt"><b>Amestecă variantele</b><small>Nu te baza pe poziția literei.</small></span>
+        </label>
+        <label class="switch">
+          <input type="checkbox" id="opt-hide-opts">
+          <span class="track"><span class="thumb"></span></span>
+          <span class="switch-txt"><b>Ascunde variantele</b><small>Mod greu: doar întrebarea pe față.</small></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="start-row">
+      <button class="btn btn-primary btn-lg" id="start-btn" type="button">Începe sesiunea</button>
+      <p class="start-note" id="start-note"></p>
+    </div>
+
+    <p class="foot-note">Întrebările sunt amestecate la fiecare sesiune, deci poți relua oricând.</p>
+  </div>
+</section>
+
+<!-- ───────────── STUDY ───────────── -->
+<section class="screen" id="screen-study">
+  <div class="wrap study-wrap">
+    <div class="study-head">
+      <button class="icon-btn ghost" id="quit-btn" type="button" aria-label="Termină sesiunea">✕</button>
+      <div class="progress">
+        <div class="progress-bar"><span id="progress-fill"></span></div>
+        <div class="progress-txt">
+          <span id="progress-count">1 / 20</span>
+          <span class="tally">
+            <b class="ok" id="tally-known">0</b> știute ·
+            <b class="bad" id="tally-unknown">0</b> de repetat
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flip" id="flip">
+      <div class="flip-in" id="flip-in">
+        <!-- FAȚĂ -->
+        <article class="card face face-front" id="face-front">
+          <div class="face-top">
+            <span class="badge" id="q-type">CS</span>
+            <span class="q-section" id="q-section"></span>
+            <span class="q-num" id="q-num">#1</span>
+          </div>
+          <div class="face-body">
+            <h2 class="q-text" id="q-text"></h2>
+            <figure class="q-fig" id="q-fig" hidden><img id="q-img" alt="Imagine din întrebare"></figure>
+            <ul class="opts" id="q-opts"></ul>
+          </div>
+          <div class="face-foot">
+            <button class="btn btn-primary" id="reveal-btn" type="button">Arată răspunsul</button>
+            <span class="hint">sau apasă <kbd>Space</kbd></span>
+          </div>
+        </article>
+
+        <!-- VERSO -->
+        <article class="card face face-back" id="face-back">
+          <div class="face-top">
+            <span class="badge badge-ans">Răspuns</span>
+            <span class="q-section" id="a-section"></span>
+            <span class="q-num" id="a-num">#1</span>
+          </div>
+          <div class="face-body">
+            <h3 class="a-q" id="a-q"></h3>
+            <figure class="q-fig" id="a-fig" hidden><img id="a-img" alt="Imagine din întrebare"></figure>
+            <ul class="opts opts-ans" id="a-opts"></ul>
+            <p class="note" id="a-note" hidden></p>
+          </div>
+          <div class="face-foot grade">
+            <button class="btn btn-bad" id="bad-btn" type="button">
+              <span class="btn-ico">✕</span> Nu am știut
+            </button>
+            <button class="btn btn-ok" id="ok-btn" type="button">
+              <span class="btn-ico">✓</span> Am știut
+            </button>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <p class="kbd-help">
+      <kbd>Space</kbd> întoarce · <kbd>1</kbd> nu am știut · <kbd>2</kbd> am știut · <kbd>Esc</kbd> termină
+    </p>
+  </div>
+</section>
+
+<!-- ───────────── RESULTS ───────────── -->
+<section class="screen" id="screen-results">
+  <div class="wrap">
+    <div class="card result-card">
+      <p class="eyebrow" id="res-eyebrow">Sesiune terminată</p>
+      <h1 class="res-title" id="res-title">Bravo!</h1>
+
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+          <circle class="ring-fg" cx="60" cy="60" r="52" id="ring-fg"></circle>
+        </svg>
+        <div class="ring-mid">
+          <span class="ring-pct" id="res-pct">0%</span>
+          <span class="ring-lab">corect</span>
+        </div>
+      </div>
+
+      <div class="score-row">
+        <div class="score ok">
+          <b id="res-known">0</b>
+          <span>Știute</span>
+        </div>
+        <div class="score bad">
+          <b id="res-unknown">0</b>
+          <span>Greșite</span>
+        </div>
+        <div class="score tot">
+          <b id="res-total">0</b>
+          <span>Total</span>
+        </div>
+      </div>
+
+      <div class="res-actions">
+        <button class="btn btn-primary btn-lg" id="again-btn" type="button">Încă o sesiune</button>
+        <button class="btn btn-soft" id="retry-wrong-btn" type="button">Repetă greșelile</button>
+        <button class="btn btn-soft" id="review-btn" type="button">Vezi greșelile</button>
+        <button class="btn btn-ghost" id="home-btn" type="button">Schimbă setările</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────── REVIEW ───────────── -->
+<section class="screen" id="screen-review">
+  <div class="wrap">
+    <div class="review-head">
+      <h1>Întrebările greșite</h1>
+      <button class="btn btn-soft" id="back-res-btn" type="button">← Înapoi la rezultate</button>
+    </div>
+    <div id="review-list" class="review-list"></div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p>268 de întrebări extrase din <em>totalizarea 1.pdf</em> · răspunsurile corecte = cele evidențiate cu verde în PDF.</p>
+  </div>
+</footer>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
