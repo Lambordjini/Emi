@@ -48,7 +48,8 @@ Cloudflare Pages work the same way — point them at the repository root with no
 4. Optionally turn on **Amestecă variantele** (shuffles the answer options, so you cannot
    memorise letter positions) or **Ascunde variantele** (hard mode, flashcards only: the front
    shows only the question).
-5. At the end you get your **percentage**, how many you got right and how many you missed. From
+5. The score is not shown while you work — only the card number — so nothing hints at whether
+   the last answer was right. At the end you get your **percentage**, how many you got right and how many you missed. From
    there you can **repeat just the ones you missed**, **review them** with the correct answers
    (and, in test mode, what you had picked), or start a fresh session.
 

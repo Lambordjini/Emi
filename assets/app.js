@@ -244,8 +244,6 @@
 
     $("progress-count").textContent = (session.i + 1) + " / " + total;
     $("progress-fill").style.width = (session.i / total * 100) + "%";
-    $("tally-known").textContent = session.known.length;
-    $("tally-unknown").textContent = session.unknown.length;
 
     // front
     $("q-type").textContent = q.t;
@@ -278,9 +276,6 @@
     $("reveal-hint").innerHTML = quiz
       ? "tastele <kbd>1</kbd>–<kbd>5</kbd> aleg, <kbd>Enter</kbd> verifică"
       : "sau apasă <kbd>Space</kbd>";
-
-    $("tally-known-lbl").textContent = quiz ? "corecte" : "știute";
-    $("tally-unknown-lbl").textContent = quiz ? "greșite" : "de repetat";
 
     $("kbd-help").innerHTML = quiz
       ? "<kbd>1</kbd>–<kbd>5</kbd> aleg variantele · <kbd>Enter</kbd> verifică / continuă · <kbd>Esc</kbd> termină"
@@ -335,8 +330,6 @@
       v.hidden = false;
 
       (card.correct ? session.known : session.unknown).push(card);
-      $("tally-known").textContent = session.known.length;
-      $("tally-unknown").textContent = session.unknown.length;
       fitCard();
     }
 
